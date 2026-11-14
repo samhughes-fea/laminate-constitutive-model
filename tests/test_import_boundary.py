@@ -17,7 +17,8 @@ PACKAGE = "laminate_constitutive_model"
 ROOT = SRC / PACKAGE
 SUITE = {"implicit_geometry_kernel", "shell_fem", "anisotropic_section_model", "onedfem", "composite_laminate_model"}
 ALLOWED = {"numpy", "scipy", "__future__", "abc", "collections", "dataclasses", "enum", "functools", "itertools",
-           "math", "typing", "warnings", "copy", "json", "pathlib", "types", "re", "os"}
+           "math", "typing", "warnings", "copy", "json", "pathlib", "types", "re", "os",
+           "logging", "time", "contextlib", "contextvars"}
 
 
 def _imports(path):
