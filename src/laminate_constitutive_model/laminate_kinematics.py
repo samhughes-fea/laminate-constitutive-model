@@ -51,6 +51,7 @@ import numpy as np
 
 from .laminate_hygrothermal import HygrothermalEngine, HygrothermalState
 from .laminate_mechanics import Laminate
+from .stage_log import stage
 
 # [u_x, u_y] <-> shear order [gamma_yz, gamma_xz]
 SWAP = np.array([[0.0, 1.0], [1.0, 0.0]])
@@ -185,22 +186,24 @@ class GeneralizedSection:
 
 
 def generalized_section(model: "SectionModel", laminate: Laminate) -> GeneralizedSection:
-    condensed = model.section_stiffness(laminate)
-    basis = model.enrichment(laminate)
-    if basis is None:
-        return GeneralizedSection(condensed.abd, condensed.shear, None, condensed)
-    m = basis.n_functions
-    C_ee = np.zeros((6 + 4 * m, 6 + 4 * m))
-    C_ss = np.zeros((2 + 2 * m, 2 + 2 * m))
-    pts, wts = _GAUSS3
-    for z0, z1, k in _segments(laminate, basis):
-        ply = laminate.plies[k]
-        half, mid = 0.5 * (z1 - z0), 0.5 * (z1 + z0)
-        for g, w in zip(pts, wts):
-            E, G = strain_operators_at(basis, mid + half * g)
-            C_ee += E.T @ ply.Q_bar @ E * (w * half)
-            C_ss += G.T @ ply.Q_bar_s @ G * (w * half)
-    return GeneralizedSection(0.5 * (C_ee + C_ee.T), 0.5 * (C_ss + C_ss.T), basis, condensed)
+    """Section stiffness of one laminate. Reports ``laminate_mechanics`` when it returns."""
+    with stage("laminate_constitutive_model", "laminate_mechanics"):
+        condensed = model.section_stiffness(laminate)
+        basis = model.enrichment(laminate)
+        if basis is None:
+            return GeneralizedSection(condensed.abd, condensed.shear, None, condensed)
+        m = basis.n_functions
+        C_ee = np.zeros((6 + 4 * m, 6 + 4 * m))
+        C_ss = np.zeros((2 + 2 * m, 2 + 2 * m))
+        pts, wts = _GAUSS3
+        for z0, z1, k in _segments(laminate, basis):
+            ply = laminate.plies[k]
+            half, mid = 0.5 * (z1 - z0), 0.5 * (z1 + z0)
+            for g, w in zip(pts, wts):
+                E, G = strain_operators_at(basis, mid + half * g)
+                C_ee += E.T @ ply.Q_bar @ E * (w * half)
+                C_ss += G.T @ ply.Q_bar_s @ G * (w * half)
+        return GeneralizedSection(0.5 * (C_ee + C_ee.T), 0.5 * (C_ss + C_ss.T), basis, condensed)
 
 
 def generalized_hygrothermal(
