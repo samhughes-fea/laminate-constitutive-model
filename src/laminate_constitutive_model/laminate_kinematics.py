@@ -187,7 +187,8 @@ class GeneralizedSection:
 
 def generalized_section(model: "SectionModel", laminate: Laminate) -> GeneralizedSection:
     """Section stiffness of one laminate. Reports ``laminate_mechanics`` when it returns."""
-    with stage("laminate_constitutive_model", "laminate_mechanics"):
+    with stage("laminate_constitutive_model", "laminate_mechanics") as rec:
+        rec.set("stations", 1)
         condensed = model.section_stiffness(laminate)
         basis = model.enrichment(laminate)
         if basis is None:

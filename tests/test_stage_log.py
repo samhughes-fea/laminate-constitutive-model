@@ -35,7 +35,8 @@ def test_public_contract() -> None:
 
     assert LOGGER_NAME == "blade.stage"
     assert [item.name for item in dataclasses.fields(StageReport)] == [
-        "package", "stage", "seconds", "error", "depth", "started"]
+        "package", "stage", "seconds", "error", "depth", "started",
+        "cpu_seconds", "measures"]
     assert callable(stage) and callable(fold_reports)
     assert issubclass(StageCollector, logging.Handler)
 
@@ -47,5 +48,7 @@ def test_generalized_section_reports_laminate_mechanics(cfrp) -> None:
     laminate = Laminate.from_angles(cfrp, [0, 90], 0.001)
     with collecting() as sink:
         generalized_section(FSDTModel(), laminate)
-    folded = fold_reports(sink.take())
+    reports = sink.take()
+    assert reports[0].measures["stations"] == 1
+    folded = fold_reports(reports)
     assert folded["laminate_mechanics"] >= 0.0
