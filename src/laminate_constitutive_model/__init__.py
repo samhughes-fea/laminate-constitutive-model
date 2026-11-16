@@ -7,6 +7,7 @@ Materials       ElasticProperties3D, StrengthProperties3D, MaterialCard, Materia
 Laminates       Ply, Laminate; ply stiffness transformations and invariants
 Environment     HygrothermalProperties, HygrothermalState, HygrothermalEngine
 Kinematics      section stiffness of the through-thickness theories: integrate_abd (ABD),
+                ply_stress_strain (ply stress and strain from mid-plane strain and curvature),
                 CLPTModel, FSDTModel, RefinedZigZagModel, LayerwiseModel
 Failure         MaximumStressCriterion, TsaiHillCriterion, TsaiWuCriterion, HashinCriterion,
                 DelaminationOnsetCriterion; register_criterion, create_criterion
@@ -48,12 +49,14 @@ from .laminate_kinematics import (
     KinematicModel,
     LayerwiseModel,
     LayerwiseThicknessMatrices,
+    PlyStressStrain,
     RefinedZigZagModel,
     SectionModel,
     SectionStiffness,
     ThroughThicknessBasis,
     ThroughThicknessRecovery,
     integrate_abd,
+    ply_stress_strain,
 )
 from .laminate_hygrothermal import HygrothermalEngine, HygrothermalProperties, HygrothermalState
 from .laminate_materials import (

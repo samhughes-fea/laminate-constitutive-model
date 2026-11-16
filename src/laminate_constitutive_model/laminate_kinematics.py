@@ -49,7 +49,7 @@ from typing import List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from .laminate_hygrothermal import HygrothermalEngine, HygrothermalState
+from .laminate_hygrothermal import NULL_STATE, HygrothermalEngine, HygrothermalState
 from .laminate_mechanics import Laminate
 from .stage_log import stage
 
@@ -240,6 +240,86 @@ def integrate_abd(laminate: Laminate) -> np.ndarray:
         B += ply.Q_bar * (z_t**2 - z_b**2) / 2.0
         D += ply.Q_bar * (z_t**3 - z_b**3) / 3.0
     return np.block([[A, B], [B, D]])
+
+
+_PLY_FACE = {
+    "bottom": lambda zb, zt: zb,
+    "mid": lambda zb, zt: 0.5 * (zb + zt),
+    "top": lambda zb, zt: zt,
+}
+
+
+@dataclass(frozen=True)
+class PlyStressStrain:
+    """CLPT ply stress and strain from mid-plane strain and curvature.
+
+    One row per ply sample. ``eps(z) = eps0 + z kappa`` with ``z`` measured from
+    the laminate reference surface (the same pair ``integrate_abd`` uses).
+    ``strain_global`` is that total in-plane strain [ex, ey, gxy];
+    ``strain_mechanical`` subtracts the free hygrothermal expansion, and it is
+    the strain that produces ``stress_global = Qbar @ strain_mechanical``.
+    Material-axis arrays are in the ply fibre axes.
+    """
+
+    ply_index: np.ndarray
+    position: np.ndarray
+    z: np.ndarray
+    strain_global: np.ndarray
+    strain_mechanical: np.ndarray
+    strain_material: np.ndarray
+    stress_global: np.ndarray
+    stress_material: np.ndarray
+
+
+def ply_stress_strain(
+    laminate: Laminate,
+    eps0,
+    kappa,
+    *,
+    positions: Sequence[str] = ("bottom", "mid", "top"),
+    state: Optional[HygrothermalState] = None,
+    engine: Optional[HygrothermalEngine] = None,
+) -> PlyStressStrain:
+    """Ply in-plane stress and strain from mid-plane strain ``eps0`` and curvature ``kappa``.
+
+    ``eps0`` and ``kappa`` are the CLPT pair about the laminate reference surface:
+    ``eps(z) = eps0 + z kappa``. ``positions`` are ``bottom``, ``mid`` and/or ``top``
+    of each ply. A hygrothermal ``state`` is taken off the mechanical strain.
+    """
+    e0 = np.asarray(eps0, dtype=float).reshape(3)
+    k = np.asarray(kappa, dtype=float).reshape(3)
+    if state is None:
+        state = NULL_STATE
+    ht = engine or HygrothermalEngine()
+    unknown = [p for p in positions if p not in _PLY_FACE]
+    if unknown:
+        raise ValueError(f"positions must be bottom, mid or top; got {unknown}")
+    rows = {key: [] for key in ("ply", "pos", "z", "eg", "em", "emat", "sg", "sm")}
+    for i, (ply, (zb, zt)) in enumerate(zip(laminate.plies, laminate.ply_bounds())):
+        for pos in positions:
+            z = float(_PLY_FACE[pos](zb, zt))
+            eps = e0 + z * k
+            eps_ht = np.zeros(3) if state.is_null else ht.global_free_strain(ply, state, z, laminate.offset)
+            eps_m = eps - eps_ht
+            sigma = ply.Q_bar @ eps_m
+            rows["ply"].append(i)
+            rows["pos"].append(pos)
+            rows["z"].append(z)
+            rows["eg"].append(eps)
+            rows["em"].append(eps_m)
+            rows["emat"].append(ply.to_material_strain(eps_m))
+            rows["sg"].append(sigma)
+            rows["sm"].append(ply.to_material_stress(sigma))
+    return PlyStressStrain(
+        np.asarray(rows["ply"], dtype=int),
+        np.asarray(rows["pos"]),
+        np.asarray(rows["z"], dtype=float),
+        np.asarray(rows["eg"], dtype=float),
+        np.asarray(rows["em"], dtype=float),
+        np.asarray(rows["emat"], dtype=float),
+        np.asarray(rows["sg"], dtype=float),
+        np.asarray(rows["sm"], dtype=float),
+    )
 
 
 def integrate_shear(laminate: Laminate) -> np.ndarray:

@@ -72,17 +72,19 @@ minor release. Finite-element names (`FEAMesh`, `BladeBuilder`, ...) moved to
 
 ```python
 import numpy as np
-from laminate_constitutive_model import HashinCriterion, Laminate, create_default_library, integrate_abd
+from laminate_constitutive_model import (
+    HashinCriterion, Laminate, create_default_library, integrate_abd, ply_stress_strain,
+)
 
 card = create_default_library().get("T300/5208")
 laminate = Laminate.from_angles(card, [0, 45, -45, 90, 90, -45, 45, 0], ply_thickness=0.25e-3)
 
 ABD = integrate_abd(laminate)                     # 6 x 6 [A B; B D]
 N = np.array([200e3, 0.0, 0.0])                   # Nx = 200 kN/m
-strain = np.linalg.solve(ABD[:3, :3], N)          # symmetric laminate: no curvature
-for k, ply in enumerate(laminate.plies):
-    stress = ply.Q_bar @ strain                   # global axes [σx, σy, τxy]
-    print(k, ply.angle, stress / 1e6)
+eps0 = np.linalg.solve(ABD[:3, :3], N)            # symmetric laminate: no curvature
+plies = ply_stress_strain(laminate, eps0, [0.0, 0.0, 0.0], positions=("mid",))
+for k, angle, stress in zip(plies.ply_index, [p.angle for p in laminate.plies], plies.stress_global):
+    print(k, angle, stress / 1e6)
 ```
 
 ## Conventions

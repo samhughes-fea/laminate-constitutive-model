@@ -8,6 +8,11 @@ All notable changes to this project are listed here. The format follows
 
 ### Added
 
+- **`ply_stress_strain(laminate, eps0, kappa)`** returns in-plane ply stress and strain
+  from mid-plane strain and curvature (`eps(z) = eps0 + z kappa`), including material-axis
+  components and an optional hygrothermal state. Consumers no longer assemble
+  `Qbar @ (eps0 + z kappa)` by hand.
+
 - **Puck's criterion** (`PuckCriterion`, registered as `"puck"`, with `PuckParameters`):
   fibre failure plus inter-fibre failure on the most stressed action plane, from Puck
   and Schuermann (2002) and VDI 2014.
