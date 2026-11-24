@@ -1,0 +1,16 @@
+# This repository's own labels; the shared ones are in labels.base.yml (synced).
+# label-sync.yml applies both files; labels in neither are deleted.
+# Rules: docs/conventions/standard/labels.md. Never repeat a base label here.
+
+- name: "area: laminate"
+  color: "fef2c0"
+  description: Plies, laminates, ABD and the kinematic theories
+- name: "area: materials"
+  color: "fef2c0"
+  description: Material cards, library, temperature and hygrothermal properties
+- name: "area: failure"
+  color: "fef2c0"
+  description: Failure criteria, registry and array exposures
+- name: "area: examples"
+  color: "fef2c0"
+  description: Worked examples and figures

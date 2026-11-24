@@ -6,6 +6,15 @@ All notable changes to this project are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Follows the shared development standard 0.1.0: synced issue forms, PR template,
+  labels, `pr-title`, `label-sync`, `codeql` and `release` workflows, and the standard
+  in `docs/conventions/standard/`. Releases are now tagged by `release.yml` when a
+  `chore(release): prepare X.Y.Z` PR merges. The PR build and wheel smoke test moved
+  from `release.yml` to the `core-install` job in `tests.yml`. Added `AGENTS.md`,
+  `SCOPE.md`, `CONTRIBUTING.md` and `.github/labels.yml`. (#PR)
+
 ### Added
 
 - **`ply_stress_strain(laminate, eps0, kappa)`** returns in-plane ply stress and strain
