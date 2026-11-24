@@ -11,6 +11,8 @@ CI runs the same checks (`tests.yml`):
 
 ```bash
 pip install -e ".[dev]"     
+pip install -r requirements/lint.txt
+ruff check .                    # lint (pinned ruff)
 pytest -q                       # the test suite
 python examples/run_all.py      # every example, with its figures
 python -m build                 # sdist and wheel

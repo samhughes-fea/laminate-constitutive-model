@@ -12,9 +12,9 @@ This repository's specifics:
   `pyproject.toml` reads it from there.
 - The release PR moves the `## [Unreleased]` notes in `CHANGELOG.md` under
   `## [X.Y.Z] - YYYY-MM-DD`.
-- The tag `v0.3.0` already exists, although `__version__` on `main` still says
-  0.2.0 and the changelog has no 0.3.0 section. The next release is therefore
-  0.4.0 or later, and its changelog section notes what 0.3.0 contained.
+- The tag `v0.3.0` was made while `__version__` still said 0.2.0, and the
+  changelog has no 0.3.0 section. `main` now carries 0.4.0, the next release;
+  its changelog section notes what 0.3.0 contained.
 - shell-fem and anisotropic-section-model pin this package by tag, so release here
   before them when they need a change.
 - PyPI: `pypi: false` in `.github/repo.yml`. To publish, add a PyPI trusted
