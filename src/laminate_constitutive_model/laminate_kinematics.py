@@ -44,7 +44,7 @@ the enrichment carries the warping that the correction factor otherwise approxim
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List, Optional, Sequence, Tuple
 
 import numpy as np

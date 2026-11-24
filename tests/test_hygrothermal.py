@@ -1,7 +1,6 @@
 """Hygrothermal properties, expansion coefficients and resultants (the FE solves are in shell-fem)."""
 
 import numpy as np
-import pytest
 
 trapezoid = getattr(np, "trapezoid", None) or np.trapz
 
@@ -11,7 +10,6 @@ from laminate_constitutive_model import (
     HygrothermalState,
     Laminate,
     Ply,
-    integrate_abd,
 )
 
 
